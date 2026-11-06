@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Report Viewer: {{ case_id }} — AV-Forensics{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-4">
+
+  <!-- Viewer Top Controls Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('view_result', case_id=case_id) }}"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition">
+        &larr; Back to Case Analysis
+      </a>
+      <span class="text-slate-700">|</span>
+      <div>
+        <h2 class="text-sm font-bold text-white">Forensic Examination Document</h2>
+        <p class="text-xs text-slate-400 font-mono">{{ case_id }}</p>
+      </div>
+    </div>
+
+    <!-- Action Buttons Inside Viewer -->
+    <div class="flex items-center gap-2">
+      <a href="{{ url_for('serve_pdf_raw', case_id=case_id) }}" target="_blank"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+        </svg>
+        <span>Open Raw Tab</span>
+      </a>
+
+      <a href="{{ url_for('download_report', case_id=case_id) }}"
+        class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/25 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Download PDF</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Interactive Embedded PDF Viewer -->
+  <div class="w-full h-[82vh] bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden">
+    <iframe src="{{ url_for('serve_pdf_raw', case_id=case_id) }}" class="w-full h-full border-0" title="Forensic PDF Preview"></iframe>
+  </div>
+
+</div>
+{% endblock %}

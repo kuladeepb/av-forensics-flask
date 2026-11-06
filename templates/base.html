@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AV-Forensics{% endblock %} — Deepfake Detection System</title>
+  <!-- Tailwind CSS via CDN (Zero build step!) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js for interactive sync timeline -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="flex flex-col min-h-full bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Brand -->
+        <a href="{{ url_for('index') }}" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="text-lg font-bold tracking-tight text-white">AV-Forensics</span>
+          </div>
+        </a>
+
+        <!-- Navigation Links -->
+        <div class="flex items-center gap-4">
+          {% if session.get('user_id') %}
+            <a href="{{ url_for('index') }}" class="text-sm font-medium hover:text-white {% if request.endpoint == 'index' %}text-blue-400{% else %}text-slate-400{% endif %} transition">Scan Video</a>
+            <a href="{{ url_for('history') }}" class="text-sm font-medium hover:text-white {% if request.endpoint == 'history' %}text-blue-400{% else %}text-slate-400{% endif %} transition">Case History</a>
+            {% if session.get('role') == 'admin' %}
+              <a href="{{ url_for('admin') }}" class="text-sm font-medium px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition">Admin Panel</a>
+            {% endif %}
+            
+            <div class="h-5 w-px bg-slate-800 mx-1"></div>
+
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
+                  {{ session.get('username', 'U')[0]|upper }}
+                </div>
+                <span class="text-sm font-medium text-slate-300 hidden md:inline">{{ session.get('username') }}</span>
+              </div>
+              <a href="{{ url_for('logout') }}" class="text-xs font-medium text-slate-400 hover:text-rose-400 transition" title="Sign out">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+              </a>
+            </div>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="text-sm font-medium text-slate-300 hover:text-white transition">Sign In</a>
+            <a href="{{ url_for('register') }}" class="text-sm font-medium px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition">Register</a>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Alerts -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-3 px-4 py-3 rounded-lg text-sm flex items-center justify-between border 
+            {% if category == 'success' %}bg-emerald-950/40 text-emerald-300 border-emerald-800
+            {% elif category == 'danger' %}bg-rose-950/40 text-rose-300 border-rose-800
+            {% elif category == 'warning' %}bg-amber-950/40 text-amber-300 border-amber-800
+            {% else %}bg-blue-950/40 text-blue-300 border-blue-800{% endif %}">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="text-current opacity-60 hover:opacity-100">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-900 bg-slate-950/50 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>AV-Forensics &copy; 2026 — Audio-Visual Deepfake Detection & Modality Attribution</p>
+      <p class="text-slate-600">Audio-Visual Deepfake Detection & Modality Attribution Platform</p>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Python & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Deepfake Weights & Data (Too large for GitHub)
+*.pth
+*.pt
+*.bin
+*.h5
+data/uploads/*
+data/reports/*
+!data/uploads/.gitkeep
+!data/reports/.gitkeep
+
+# Local SQLite Database & Logs
+data/forensics.db
+*.log
+.env
+.env.*
+
+# IDEs
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+

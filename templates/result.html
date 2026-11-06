@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Case Result: {{ record['case_id'] }} — AV-Forensics{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8">
+
+  <!-- Header Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2">
+        <a href="{{ url_for('index') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition flex items-center gap-1">
+          &larr; New Analysis
+        </a>
+        <span class="text-slate-600">/</span>
+        <span class="font-mono text-xs font-bold text-blue-400">{{ record['case_id'] }}</span>
+      </div>
+      <h1 class="text-2xl font-bold text-white tracking-tight">Forensic Examination Summary</h1>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('view_report_page', case_id=record['case_id']) }}"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-lg shadow-blue-600/25 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+        <span>View PDF Report</span>
+      </a>
+
+      <a href="{{ url_for('download_report', case_id=record['case_id']) }}"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs border border-slate-700 transition" title="Direct Download">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Download</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Primary Verdict Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Big Verdict Card -->
+    <div class="lg:col-span-2 rounded-3xl p-8 border shadow-2xl backdrop-blur-sm relative overflow-hidden flex flex-col justify-between
+      {% if result['verdict'] == 'REAL' %}
+        bg-emerald-950/20 border-emerald-500/30 text-emerald-400
+      {% else %}
+        bg-rose-950/20 border-rose-500/30 text-rose-400
+      {% endif %}">
+      
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full
+            {% if result['verdict'] == 'REAL' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
+            {% else %}bg-rose-500/10 text-rose-400 border border-rose-500/30{% endif %}">
+            Primary Multi-Task Verdict
+          </span>
+          <span class="text-xs text-slate-400 font-mono">{{ result['filename'] }} ({{ result['duration'] }}s)</span>
+        </div>
+
+        <div>
+          <h2 class="text-4xl sm:text-5xl font-black tracking-tight text-white flex items-center gap-4">
+            {% if result['verdict'] == 'REAL' %}
+              <span class="text-emerald-400">AUTHENTIC</span>
+            {% else %}
+              <span class="text-rose-500">DEEPFAKE DETECTED</span>
+            {% endif %}
+          </h2>
+          <p class="text-sm text-slate-300 mt-2">
+            {% if result['verdict'] == 'REAL' %}
+              Video and audio streams demonstrate natural biometric temporal synchronization without synthetic vector artifacts.
+            {% else %}
+              Significant cross-modal desynchronization and generative line-art signatures identified across visual articulators.
+            {% endif %}
+          </p>
+        </div>
+      </div>
+
+      <!-- Confidence Gauge Bar -->
+      <div class="mt-8 pt-6 border-t border-slate-800/80 space-y-2">
+        <div class="flex justify-between text-xs font-semibold">
+          <span class="text-slate-400">Model Confidence Level</span>
+          <span class="text-white font-mono text-base">{{ (result['confidence'] * 100)|round(1) }}%</span>
+        </div>
+        <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-slate-800">
+          <div class="h-3 rounded-full transition-all duration-1000
+            {% if result['verdict'] == 'REAL' %}bg-gradient-to-r from-emerald-600 to-teal-400
+            {% else %}bg-gradient-to-r from-rose-600 to-red-400{% endif %}"
+            style="width: {{ result['confidence'] * 100 }}%">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modality Attribution Card -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl flex flex-col justify-between">
+      <div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Modality Attribution</h3>
+        <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 text-center mb-6">
+          <span class="text-xs text-slate-500 uppercase font-semibold">Classification</span>
+          <p class="text-lg font-extrabold text-white mt-0.5">{{ result['modality']['label'] }}</p>
+          <span class="inline-block mt-1 px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            {{ result['modality']['class'] }}
+          </span>
+        </div>
+
+        <!-- 4-Class Breakdown -->
+        <div class="space-y-3 text-xs">
+          {% for cls, p in result['modality']['probabilities'].items() %}
+          <div class="space-y-1">
+            <div class="flex justify-between font-mono">
+              <span class="text-slate-400 font-sans font-medium">{{ cls }}</span>
+              <span class="text-slate-200">{{ (p * 100)|round(1) }}%</span>
+            </div>
+            <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-blue-500 h-1.5 rounded-full" style="width: {{ p * 100 }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-center text-xs">
+        <div class="p-2 rounded-lg bg-slate-950">
+          <span class="text-slate-500 block text-[10px]">Audio Forgery</span>
+          <span class="font-bold text-slate-300 font-mono">{{ (result['modality']['audio_fake_prob'] * 100)|round(1) }}%</span>
+        </div>
+        <div class="p-2 rounded-lg bg-slate-950">
+          <span class="text-slate-500 block text-[10px]">Video Forgery</span>
+          <span class="font-bold text-slate-300 font-mono">{{ (result['modality']['video_fake_prob'] * 100)|round(1) }}%</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Lip-Audio Sync Trajectory Chart -->
+  <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div>
+        <h3 class="text-base font-bold text-white tracking-tight">Lip-Audio Synchronization Timeline</h3>
+        <p class="text-xs text-slate-400">Frame-level cosine similarity trajectory between mHuBERT-147 speech tokens and visual mouth articulators</p>
+      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-blue-500"></span><span class="text-slate-300">Sync Trajectory</span></div>
+        <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-emerald-500"></span><span class="text-slate-300">Synchrony Threshold (0.50)</span></div>
+      </div>
+    </div>
+
+    <!-- Chart Canvas -->
+    <div class="w-full h-64 bg-slate-950/60 rounded-2xl p-4 border border-slate-800">
+      <canvas id="syncChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Evidence Frames Gallery -->
+  {% if result['evidence_frames'] %}
+  <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
+    <div>
+      <h3 class="text-base font-bold text-white tracking-tight">Keyframe Evidence Gallery</h3>
+      <p class="text-xs text-slate-400">Critical timestamps exhibiting the lowest temporal phoneme-viseme correlation</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {% for ev in result['evidence_frames'] %}
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden p-3 space-y-3">
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="text-slate-400">t = {{ ev['t'] }}s</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold
+            {% if ev['score'] < 0.3 %}bg-rose-500/10 text-rose-400 border border-rose-500/20
+            {% else %}bg-blue-500/10 text-blue-400 border border-blue-500/20{% endif %}">
+            Sync: {{ ev['score'] }}
+          </span>
+        </div>
+
+        <div class="aspect-video rounded-xl overflow-hidden bg-slate-900 border border-slate-800">
+          <img src="data:image/jpeg;base64,{{ ev['frame_b64'] }}" alt="Evidence Frame" class="w-full h-full object-cover">
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[11px] text-slate-400">Mouth Articulator:</span>
+          <div class="w-10 h-10 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
+            <img src="data:image/jpeg;base64,{{ ev['mouth_b64'] }}" alt="Mouth Crop" class="w-full h-full object-cover">
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  // Render Chart.js
+  const syncData = {{ result['sync_timeline']|tojson }};
+  const labels = syncData.map(d => d.t + 's');
+  const values = syncData.map(d => d.score);
+
+  const ctx = document.getElementById('syncChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Lip-Audio Correlation',
+          data: values,
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59, 130, 246, 0.08)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.25,
+          pointRadius: 2,
+          pointHoverRadius: 5
+        },
+        {
+          label: 'Synchrony Threshold',
+          data: new Array(labels.length).fill(0.5),
+          borderColor: '#10B981',
+          borderWidth: 1.5,
+          borderDash: [5, 5],
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0F172A',
+          borderColor: '#334155',
+          borderWidth: 1,
+          titleFont: { family: 'Inter', size: 11 },
+          bodyFont: { family: 'Inter', size: 11 }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(51, 65, 85, 0.3)' },
+          ticks: { color: '#64748B', font: { family: 'Inter', size: 10 } }
+        },
+        y: {
+          min: -1.0,
+          max: 1.0,
+          grid: { color: 'rgba(51, 65, 85, 0.3)' },
+          ticks: { color: '#64748B', font: { family: 'Inter', size: 10 } }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
