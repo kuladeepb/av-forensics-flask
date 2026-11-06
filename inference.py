@@ -145,6 +145,18 @@ class ModelWrapper:
             freeze_layers=0,
         ).to(self.device)
 
+        if not os.path.exists(model_path):
+            weights_url = os.environ.get("MODEL_WEIGHTS_URL", "").strip()
+            if weights_url:
+                log.info("Model file '%s' not found locally. Downloading from %s...", model_path, weights_url)
+                urllib.request.urlretrieve(weights_url, model_path)
+                log.info("Download completed successfully.")
+            else:
+                raise FileNotFoundError(
+                    f"Model weights file '{model_path}' not found. "
+                    f"Please place 'model.pth' in the project directory or set the MODEL_WEIGHTS_URL environment variable."
+                )
+
         state = torch.load(model_path, map_location=self.device)
         if hasattr(self.model, "audio_enc") and hasattr(self.model.audio_enc, "layer_weights"):
             ckpt_w = state.get("audio_enc.layer_weights", None)

@@ -1,0 +1,15 @@
+.git/
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+data/forensics.db
+data/uploads/*
+!data/uploads/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
+model.pth
+*.log
