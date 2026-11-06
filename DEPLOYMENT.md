@@ -70,3 +70,4 @@ On first launch, the database automatically initializes with:
 - **Username:** `admin`
 - **Password:** `admin123`
 *(Remember to change or promote new accounts inside the Admin Control Center).*
+

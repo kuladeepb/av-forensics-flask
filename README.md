@@ -1,5 +1,11 @@
 # AV-Forensics (Flask Full-Stack Edition) 🛡️🔍
 
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python)](https://python.org)
+[![Flask Framework](https://img.shields.io/badge/Flask-3.0%2B-black.svg?logo=flask)](https://flask.palletsprojects.com/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-Deep%20Learning-ee4c2c.svg?logo=pytorch)](https://pytorch.org)
+[![Docker Ready](https://img.shields.io/badge/Docker-Containerized-2496ED.svg?logo=docker)](DEPLOYMENT.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **Audio-Visual Lip-Sync Deepfake Detection System with User/Admin Authentication & SQLite Case Auditing**
 
 > *AV-Forensics: Audio-Visual Lip-Sync Consistency Transformer for Cross-Dataset Deepfake Video Detection and Modality-Level Forgery Classification*
@@ -35,6 +41,8 @@ Tested on real-world human speech and synthetic generative AI avatar datasets (1
    - Anti-aliased lip-audio sync trajectory charts, evidence keyframe comparisons, and examiner attestation.
 5. **Accelerated Inference:**
    - One-time audio extraction and adaptive window sampling for responsive sub-10 second scans on standard CPUs.
+6. **Container & Cloud Ready:**
+   - Pre-configured `Dockerfile` with Gunicorn WSGI server and automated weights downloading for 1-click cloud deployment.
 
 ---
 
@@ -57,43 +65,40 @@ Open **`http://127.0.0.1:5000`** in your browser!
 
 ---
 
-## 📦 Clean Repository Structure (7 Core Components)
+## 🐳 Cloud Deployment Guide
+
+See the full [**Deployment Guide (`DEPLOYMENT.md`)**](DEPLOYMENT.md) for 1-click setups on:
+- **Hugging Face Spaces** (Free 16 GB RAM Docker hosting)
+- **Render / Railway**
+- **Linux VPS / Docker**
+
+---
+
+## 📦 Clean Repository Structure
 
 ```
-project-final-flask/
+av-forensics-flask/
 ├── app.py               # Flask Web Application with User/Admin Auth & SQLite DB
 ├── inference.py         # Accelerated Multi-Modal Engine with Calibrated Gating
 ├── model.py             # PyTorch AVDeepfakeModel Architecture
 ├── report.py            # High-Resolution Forensic PDF Report Generator
 ├── config.json          # Preprocessing and Model Hyperparameters
-├── model.pth            # Trained PyTorch Model Weights
 ├── face_landmarker.task # MediaPipe 3D Landmark Model
+├── notebooks/           # Model Training & Threshold Calibration Notebooks
+│   └── colab_retrain_balanced.ipynb
 ├── templates/           # Clean Jinja2 Templates (Tailwind & Chart.js via CDN)
-│   ├── base.html
-│   ├── index.html
-│   ├── result.html
-│   ├── history.html
-│   ├── admin.html
-│   ├── login.html
-│   └── register.html
+│   ├── base.html        # Main layout, nav, brand logo
+│   ├── index.html       # Video upload dropzone and recent scans
+│   ├── result.html      # Forensic summary, verdicts, timeline chart
+│   ├── history.html     # Analyst case history
+│   ├── admin.html       # Administrator control center & audit logs
+│   ├── login.html       # Analyst sign in
+│   ├── register.html    # Analyst registration
+│   └── report_viewer.html # Embedded PDF report viewer
 ├── data/                # SQLite Database, Uploads, and Generated Reports
+├── Dockerfile           # Production container configuration
+├── .dockerignore        # Container build exclusions
 ├── requirements.txt     # Python Dependencies
+├── DEPLOYMENT.md        # Cloud deployment instructions
 └── README.md            # Documentation
 ```
-
----
-
-## 🌐 Pushing to a New GitHub Repository
-
-To push this Flask project to its own separate GitHub repository:
-
-```bash
-cd c:\Users\HP\Downloads\project-final-flask
-git init
-git branch -M main
-git add .
-git commit -m "feat: complete AV-Forensics Flask full-stack application"
-git remote add origin https://github.com/YOUR_USERNAME/NEW_REPO_NAME.git
-git push -u origin main
-```
-

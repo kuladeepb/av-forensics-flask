@@ -29,3 +29,4 @@ EXPOSE 5000
 
 # Run with Gunicorn (1 worker with threads to optimize memory usage for ML inference)
 CMD exec gunicorn --bind 0.0.0.0:${PORT} --workers 1 --threads 4 --timeout 180 app:app
+
