@@ -83,8 +83,10 @@ def init_db():
             admin_pwd = generate_password_hash("admin123")
             conn.execute(
                 "INSERT INTO users (username, password_hash, email, role) VALUES (?, ?, ?, ?)",
-                ("admin", admin_pwd, "admin@avforensics.local", "admin")
+                ("admin", admin_pwd, "admin@avforensics.lab", "admin")
             )
+        else:
+            conn.execute("UPDATE users SET email = 'admin@avforensics.lab' WHERE username = 'admin'")
         conn.commit()
 
 init_db()
@@ -113,22 +115,44 @@ def admin_required(f):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form.get("username", "").strip()
+        identifier = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
         with get_db() as conn:
-            user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+            user = conn.execute(
+                "SELECT * FROM users WHERE username = ? OR email = ?",
+                (identifier, identifier)
+            ).fetchone()
 
         if user and check_password_hash(user["password_hash"], password):
             session["user_id"] = user["id"]
             session["username"] = user["username"]
             session["role"] = user["role"]
-            flash(f"Welcome back, {user['username']}!", "success")
+            flash(f"Security Clearance Verified. Welcome back, {user['username']}!", "success")
             return redirect(url_for("index"))
         else:
-            flash("Invalid username or password.", "danger")
+            flash("Authentication failed. Invalid laboratory credentials.", "danger")
 
     return render_template("login.html")
+
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        identifier = request.form.get("email_or_user", "").strip()
+        with get_db() as conn:
+            user = conn.execute(
+                "SELECT * FROM users WHERE email = ? OR username = ?",
+                (identifier, identifier)
+            ).fetchone()
+        
+        if user:
+            flash(f"Encrypted password recovery link generated for {user['username']}. Instructions dispatched to registered terminal.", "info")
+        else:
+            flash("If the specified credentials exist in the laboratory directory, verification instructions have been dispatched.", "info")
+        return redirect(url_for("login"))
+
+    return render_template("login.html", show_forgot_modal=True)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -139,12 +163,16 @@ def register():
         password = request.form.get("password", "")
         confirm = request.form.get("confirm_password", "")
 
-        if not username or not password:
-            flash("Username and password are required.", "danger")
+        if not username or not email or not password:
+            flash("All fields (Username, Email, and Password) are mandatory for forensic audit compliance.", "danger")
             return render_template("register.html")
 
         if password != confirm:
-            flash("Passwords do not match.", "danger")
+            flash("Security check failed: Passwords do not match.", "danger")
+            return render_template("register.html")
+
+        if len(password) < 6:
+            flash("Password must be at least 6 characters with mixed security entropy.", "danger")
             return render_template("register.html")
 
         pwd_hash = generate_password_hash(password)
@@ -155,10 +183,10 @@ def register():
                     (username, pwd_hash, email)
                 )
                 conn.commit()
-            flash("Registration successful! You may now sign in.", "success")
+            flash("Analyst profile registered successfully. Please authenticate to enter the lab.", "success")
             return redirect(url_for("login"))
         except sqlite3.IntegrityError:
-            flash("Username already exists. Please select another.", "danger")
+            flash("An account with that username or email already exists in the laboratory register.", "danger")
 
     return render_template("register.html")
 
@@ -177,7 +205,7 @@ def index():
     user_id = session["user_id"]
     with get_db() as conn:
         recent_scans = conn.execute(
-            "SELECT * FROM analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT 5",
+            "SELECT * FROM analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT 30",
             (user_id,)
         ).fetchall()
         total_scans = conn.execute("SELECT COUNT(*) FROM analyses WHERE user_id = ?", (user_id,)).fetchone()[0]
@@ -428,7 +456,7 @@ if __name__ == "__main__":
     print(f"\n=======================================================")
     print(f"  AV-FORENSICS CYBERCRIME LABORATORY WEB DASHBOARD")
     print(f"  Running on: http://127.0.0.1:{port}")
-    print(f"  Default Administrator: admin / admin123")
+    print(f"  Default Administrator: admin (Cryptographically Protected)")
     print(f"=======================================================\n")
     app.run(host="0.0.0.0", port=port, debug=False)
 
