@@ -3,8 +3,63 @@
 {% block title %}Register — AV-Forensics{% endblock %}
 
 {% block content %}
-<div class="min-h-[70vh] flex items-center justify-center py-10 px-4">
-  <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-xl">
+<div class="relative min-h-[75vh] flex items-center justify-center py-8 px-4 overflow-hidden">
+
+  <!-- Ambient Forensic Analytics Dashboard Background -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden select-none">
+    <!-- Grid Pattern -->
+    <div class="absolute inset-0 bg-[radial-gradient(#38bdf8_1.2px,transparent_1.2px)] [background-size:28px_28px] opacity-15"></div>
+    
+    <!-- Ambient Blue & Indigo Glow -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl"></div>
+
+    <!-- Forensic Analytics SVG Illustration (Charts, Gauges, Waveforms & Trajectories) -->
+    <svg class="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="regAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.45" />
+          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
+        </linearGradient>
+        <linearGradient id="regBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.6" />
+          <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.1" />
+        </linearGradient>
+      </defs>
+
+      <!-- Background Analytical Chart 1: Left Bar Analytics (Outpatient / Forensic Distribution) -->
+      <g transform="translate(60, 90)" class="hidden md:block">
+        <rect x="0" y="80" width="20" height="120" rx="4" fill="url(#regBarGrad)" />
+        <rect x="28" y="130" width="20" height="70" rx="4" fill="url(#regBarGrad)" />
+        <rect x="56" y="160" width="20" height="40" rx="4" fill="url(#regBarGrad)" />
+        <rect x="84" y="170" width="20" height="30" rx="4" fill="url(#regBarGrad)" />
+        <line x1="-10" y1="200" x2="120" y2="200" stroke="#334155" stroke-width="1.5" />
+        <line x1="-10" y1="80" x2="120" y2="80" stroke="#38bdf8" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>
+      </g>
+
+      <!-- Background Analytical Chart 2: Right Radial Donut Gauge (Sync & Classification) -->
+      <g transform="translate(1080, 110)" class="hidden lg:block">
+        <circle cx="65" cy="65" r="48" stroke="#1e293b" stroke-width="10" fill="none" />
+        <circle cx="65" cy="65" r="48" stroke="#38bdf8" stroke-width="10" fill="none" stroke-dasharray="220 301" stroke-linecap="round" />
+        <circle cx="65" cy="65" r="32" stroke="#1e293b" stroke-width="7" fill="none" />
+        <circle cx="65" cy="65" r="32" stroke="#f59e0b" stroke-width="7" fill="none" stroke-dasharray="130 201" stroke-linecap="round" />
+      </g>
+
+      <!-- Background Analytical Chart 3: Area Curve Waveform (Phoneme-to-Viseme Trajectory) -->
+      <path d="M0,460 C220,440 360,330 520,380 C680,430 820,310 980,340 C1140,370 1320,290 1600,350 L1600,650 L0,650 Z" fill="url(#regAreaGrad)" />
+      <path d="M0,460 C220,440 360,330 520,380 C680,430 820,310 980,340 C1140,370 1320,290 1600,350" fill="none" stroke="#38bdf8" stroke-width="2" />
+      
+      <!-- Horizontal Guideline Grid -->
+      <line x1="0" y1="310" x2="1600" y2="310" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4" />
+      <line x1="0" y1="380" x2="1600" y2="380" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4" />
+    </svg>
+
+    <!-- Subtle Vignette Bottom Overlay -->
+    <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-slate-950 to-transparent"></div>
+  </div>
+
+  <!-- Main Register Card (Pure official form, no extra text) -->
+  <div class="relative z-10 w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-2xl backdrop-blur-md">
     
     <h2 class="text-2xl font-bold text-white text-center mb-6">Register</h2>
 

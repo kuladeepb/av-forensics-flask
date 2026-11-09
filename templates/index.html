@@ -3,14 +3,14 @@
 {% block title %}Audio-Visual Deepfake Detection — AV-Forensics{% endblock %}
 
 {% block content %}
-<div class="flex-grow w-full flex flex-col md:flex-row min-h-[calc(100vh-4rem-5.5rem)]">
+<div class="w-full h-full flex flex-col md:flex-row overflow-hidden min-h-0">
 
-  <!-- Left Sidebar: Attached to the left part completely, minimal bar -->
-  <aside class="w-full md:w-60 bg-slate-900/95 border-r border-slate-800/80 flex flex-col flex-shrink-0 p-3 space-y-3">
+  <!-- Left Sidebar: Attached to the left part completely, chatbox style, not decreased in size -->
+  <aside class="w-full md:w-64 bg-slate-900/95 border-r border-slate-800/80 flex flex-col flex-shrink-0 h-full p-3 space-y-2.5 overflow-hidden">
     
     <!-- Minimal + New Analysis button -->
     <a href="{{ url_for('index') }}" 
-       class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs flex items-center justify-center gap-1.5 shadow transition">
+       class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs flex items-center justify-center gap-1.5 shadow transition flex-shrink-0">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
       </svg>
@@ -18,13 +18,13 @@
     </a>
 
     <!-- Minimal Header -->
-    <div class="flex items-center justify-between px-2 pt-1 text-[11px] font-semibold text-slate-400 border-t border-slate-800/60">
+    <div class="flex items-center justify-between px-2 pt-1 text-[11px] font-semibold text-slate-400 border-t border-slate-800/60 flex-shrink-0">
       <span>History</span>
-      <span class="text-slate-500 font-mono text-[10px]">{{ total_scans }}</span>
+      <span class="text-slate-500 font-mono text-[10px]">{{ total_scans }} cases</span>
     </div>
 
-    <!-- Minimal Scrollable Case List -->
-    <div class="flex-grow space-y-1 overflow-y-auto max-h-[calc(100vh-16rem)] pr-0.5 text-xs select-none">
+    <!-- Minimal Scrollable Case List (Scrolls internally if long) -->
+    <div class="flex-1 space-y-1 overflow-y-auto pr-0.5 text-xs select-none min-h-0">
       {% if recent_scans %}
         {% for scan in recent_scans %}
         <a href="{{ url_for('view_result', case_id=scan['case_id']) }}"
@@ -40,7 +40,7 @@
             </span>
           </div>
           <div class="flex items-center justify-between text-[10px] text-slate-500">
-            <span class="truncate max-w-[110px]" title="{{ scan['filename'] }}">{{ scan['filename'] }}</span>
+            <span class="truncate max-w-[120px]" title="{{ scan['filename'] }}">{{ scan['filename'] }}</span>
             <span class="font-mono">{{ (scan['confidence'] * 100)|round(0)|int }}%</span>
           </div>
         </a>
@@ -53,7 +53,7 @@
     </div>
 
     <!-- Minimal Bottom Link -->
-    <div class="pt-2 border-t border-slate-800/80">
+    <div class="pt-2 border-t border-slate-800/80 flex-shrink-0">
       <a href="{{ url_for('history') }}" class="text-[11px] text-slate-400 hover:text-blue-400 px-2 py-1 block text-center font-medium transition">
         View All History &rarr;
       </a>
@@ -61,86 +61,90 @@
 
   </aside>
 
-  <!-- Right Main Area: Heading & Enlarged Upload Dropzone -->
-  <section class="flex-1 px-4 sm:px-10 py-10 flex flex-col items-center justify-start max-w-4xl mx-auto w-full space-y-8">
+  <!-- Right Main Area: Heading & Compact Upload Box (Single-Screen, Non-Scrollable) -->
+  <section class="flex-1 h-full overflow-hidden flex flex-col items-center justify-center px-4 sm:px-8 py-3 min-h-0">
     
-    <!-- Heading (ONLY the heading, no lines above or below) -->
-    <div class="text-center pt-2">
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-        Audio-Visual Deepfake Detection
-      </h1>
-    </div>
+    <div class="w-full max-w-xl flex flex-col items-center space-y-4">
 
-    <!-- Enlarged Upload Card -->
-    <div class="w-full bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-md">
-      <form id="uploadForm" action="{{ url_for('analyze') }}" method="POST" enctype="multipart/form-data">
-        
-        <!-- Large Dropzone -->
-        <div id="dropZone"
-          class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-3xl p-12 sm:p-16 text-center transition duration-300 cursor-pointer bg-slate-950/50 hover:bg-slate-950/80 group">
+      <!-- Heading (ONLY the heading, no lines above or below) -->
+      <div class="text-center">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Audio-Visual Deepfake Detection
+        </h1>
+      </div>
+
+      <!-- Decreased Size Upload Card -->
+      <div class="w-full bg-slate-900/70 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-md">
+        <form id="uploadForm" action="{{ url_for('analyze') }}" method="POST" enctype="multipart/form-data">
           
-          <input type="file" id="videoInput" name="video" accept=".mp4,.mov,.avi" class="hidden" required>
-          
-          <div class="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-3xl bg-blue-600/10 text-blue-400 border border-blue-500/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xl shadow-blue-500/10">
-            <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-            </svg>
+          <!-- Compact Dropzone -->
+          <div id="dropZone"
+            class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-5 sm:p-6 text-center transition duration-200 cursor-pointer bg-slate-950/40 hover:bg-slate-950/70 group">
+            
+            <input type="file" id="videoInput" name="video" accept=".mp4,.mov,.avi" class="hidden" required>
+            
+            <div class="w-12 h-12 mx-auto rounded-xl bg-blue-600/10 text-blue-400 border border-blue-500/20 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition shadow-md shadow-blue-500/10">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+            </div>
+
+            <div class="mt-3 space-y-1">
+              <p class="text-sm font-semibold text-white">
+                <span class="text-blue-400 underline decoration-blue-500 underline-offset-2">Click to browse</span> or drag video here
+              </p>
+              <p class="text-[11px] text-slate-400">
+                Supported formats: <span class="font-mono text-slate-300">MP4, MOV, AVI</span>
+              </p>
+            </div>
+
+            <!-- Selected File Banner -->
+            <div id="fileInfo" class="hidden mt-3 inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-blue-500/40 text-xs text-slate-200 shadow-md">
+              <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+              <span id="fileName" class="font-mono font-medium truncate max-w-[200px]">evidence_sample.mp4</span>
+              <span class="text-slate-500">|</span>
+              <span id="fileSize" class="text-slate-400 font-mono text-[11px]">3.4 MB</span>
+            </div>
           </div>
 
-          <div class="mt-6 space-y-2">
-            <p class="text-lg sm:text-xl font-bold text-white">
-              <span class="text-blue-400 underline decoration-blue-500 underline-offset-4">Click to browse file</span> or drag &amp; drop video here
-            </p>
-            <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">
-              Supported video formats: <span class="font-mono text-slate-300 font-semibold">MP4, MOV, AVI</span>
-            </p>
+          <!-- Submit Button -->
+          <div class="mt-4 flex justify-center">
+            <button type="submit" id="submitBtn" disabled
+              class="w-full py-2.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-semibold text-sm shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              <span>Run Forensic Analysis</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Processing Progress Overlay -->
+        <div id="progressBox" class="hidden mt-4 p-4 rounded-xl bg-slate-950 border border-blue-500/40 space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-white flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Analyzing Lip-Audio Consistency...
+            </span>
+            <span id="stepCounter" class="text-blue-400 font-mono font-bold text-[11px]">Initializing Engine</span>
           </div>
 
-          <!-- Selected File Banner -->
-          <div id="fileInfo" class="hidden mt-6 inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-slate-900 border border-blue-500/40 text-xs text-slate-200 shadow-xl">
-            <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
-            <span id="fileName" class="font-mono font-semibold">evidence_sample.mp4</span>
-            <span class="text-slate-500">|</span>
-            <span id="fileSize" class="text-slate-400 font-mono">3.4 MB</span>
+          <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800">
+            <div id="progressBar" class="bg-gradient-to-r from-blue-600 via-indigo-500 to-teal-400 h-2 rounded-full transition-all duration-500" style="width: 20%"></div>
           </div>
-        </div>
 
-        <!-- Submit Button -->
-        <div class="mt-8 flex justify-center">
-          <button type="submit" id="submitBtn" disabled
-            class="w-full sm:w-auto px-10 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-bold text-sm shadow-xl shadow-blue-600/30 transition flex items-center justify-center gap-3">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-            <span>Run Forensic Analysis</span>
-          </button>
-        </div>
-      </form>
-
-      <!-- Processing Progress Overlay -->
-      <div id="progressBox" class="hidden mt-8 p-6 rounded-2xl bg-slate-950 border border-blue-500/40 space-y-4">
-        <div class="flex items-center justify-between text-sm">
-          <span class="font-bold text-white flex items-center gap-2">
-            <svg class="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Analyzing Lip-Audio Consistency...
-          </span>
-          <span id="stepCounter" class="text-xs text-blue-400 font-mono font-bold">Initializing Engine</span>
-        </div>
-
-        <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-slate-800">
-          <div id="progressBar" class="bg-gradient-to-r from-blue-600 via-indigo-500 to-teal-400 h-3 rounded-full transition-all duration-500" style="width: 20%"></div>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-slate-400 pt-1">
-          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-400"></span> 1. Audio Resample</div>
-          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-400"></span> 2. 3D Lip Landmarks</div>
-          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-400"></span> 3. Cross-Attention</div>
-          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-400"></span> 4. PDF Generation</div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] text-slate-400 pt-0.5">
+            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 1. Audio Resample</div>
+            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 2. 3D Lip Articulators</div>
+            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 3. Cross-Attention</div>
+            <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 4. PDF Report</div>
+          </div>
         </div>
       </div>
+
     </div>
 
   </section>
