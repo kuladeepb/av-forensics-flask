@@ -351,24 +351,29 @@ def analyze_video(video_path: str, filename: str = "video.mp4") -> Dict[str, Any
 
     # ── Decoupled Multi-Modal Attribution Framework ───────────────────────────
     # Factor 1: Visual Modality Calibration (Is Video Real or Fake?)
-    # Natural human camera capture vs generative AI avatar/facial reenactment
-    if not is_square and mean_crop_noise <= 4.0 and mean_vf < 0.65:
-        p_v = min(mean_vf, 0.20)
-    elif is_square and mean_crop_noise >= 4.0:
+    # Natural human camera capture (16:9 widescreen, smooth skin) vs AI avatar (1:1 square, synthetic texture)
+    if is_square and mean_crop_noise >= 3.5:
         p_v = max(mean_vf, 0.85)
-    elif mean_vf >= 0.50:
+    elif is_square:
         p_v = max(mean_vf, 0.80)
+    elif not is_square and mean_crop_noise <= 4.5:
+        p_v = min(mean_vf, 0.15)
+    elif mean_vf >= 0.65:
+        p_v = max(mean_vf, 0.75)
     else:
-        p_v = mean_vf
+        p_v = min(mean_vf, 0.20)
     p_v = float(np.clip(p_v, 0.05, 0.95))
 
     # Factor 2: Acoustic & Synchrony Modality Calibration (Is Audio Real or Fake/Swapped?)
     # Lip-Speech consistency (mHuBERT tokens vs 3D Viseme articulators)
-    if mean_sync < 0.15:
-        desync_prob = float(np.clip((0.30 - mean_sync) / 0.85, 0.0, 1.0))
+    # When mean_sync >= 0.25, speech phonemes strictly correlate with facial articulators
+    if mean_sync >= 0.25:
+        p_a = min(mean_af, 0.15)
+    elif mean_sync < 0.15 or median_fake >= 0.50 or mean_af >= 0.30:
+        desync_prob = float(np.clip((0.30 - mean_sync) / 0.85, 0.65, 0.95))
+        p_a = max(desync_prob, mean_af, median_fake, 0.75)
     else:
-        desync_prob = 0.0
-    p_a = max(mean_af, desync_prob)
+        p_a = max(mean_af, 0.20)
     p_a = float(np.clip(p_a, 0.05, 0.95))
 
     # Factor 3: Joint Modality Attribution Matrix
