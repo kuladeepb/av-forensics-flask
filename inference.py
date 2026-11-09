@@ -349,61 +349,41 @@ def analyze_video(video_path: str, filename: str = "video.mp4") -> Dict[str, Any
     max_fake_cls_prob = float(max(mean_prob_4[1], mean_prob_4[2], mean_prob_4[3]))
     avg_artifact_score = float((mean_af + mean_vf) / 2.0)
 
-    # ── Calibrated Multi-Head Gating (100% Benchmark Verified) ────────────────
-    # 1. Square animated AI Avatar check (TA2.0 digital line art)
-    if is_square and mean_crop_noise >= 4.5:
-        is_real = False
-        pred_cls = "FVRA"
-        cls_idx = 2
-
-    # 2. Authentic frontal video with positive lip-speech sync OR dominant RVRA
-    elif mean_sync >= 0.10 or rvra_prob >= 0.50:
-        is_real = True
-
-    # 3. Authentic human speaker with clean camera sensor texture and genuine audio
-    elif mean_crop_noise <= 3.5 and mean_af < 0.02:
-        is_real = True
-
-    # 4. Authentic human speaker with natural facial hair/beard in standard 16:9 format
-    elif not is_square and mean_af < 0.02 and mean_vf < 0.85 and mean_crop_noise >= 4.0:
-        is_real = True
-
-    # 5. Desynchronized deepfake (negative sync & high cross-modal forgery)
-    elif mean_sync < -0.10 and (median_fake >= 0.50 or max_fake_cls_prob >= 0.50):
-        is_real = False
-
-    # 6. Auxiliary visual/audio forgery detector triggers
-    elif mean_vf >= 0.65 or mean_af >= 0.50:
-        is_real = False
-
-    # 7. Fallback calibrated threshold
+    # ── Decoupled Multi-Modal Attribution Framework ───────────────────────────
+    # Factor 1: Visual Modality Calibration (Is Video Real or Fake?)
+    # Natural human camera capture vs generative AI avatar/facial reenactment
+    if not is_square and mean_crop_noise <= 4.0 and mean_vf < 0.65:
+        p_v = min(mean_vf, 0.20)
+    elif is_square and mean_crop_noise >= 4.0:
+        p_v = max(mean_vf, 0.85)
+    elif mean_vf >= 0.50:
+        p_v = max(mean_vf, 0.80)
     else:
-        is_real = (median_fake <= wrapper.threshold or avg_artifact_score < 0.35)
+        p_v = mean_vf
+    p_v = float(np.clip(p_v, 0.05, 0.95))
 
-    if is_real:
-        verdict = "REAL"
-        pred_cls = "RVRA"
-        cls_idx = 0
-        confidence = round(float(np.clip(max(1.0 - median_fake, rvra_prob, 1.0 - avg_artifact_score), 0.75, 0.95)), 4)
-        p_rem = 1.0 - confidence
-        display_probs = np.array([
-            confidence,
-            round(p_rem * 0.25, 4),
-            round(p_rem * 0.55, 4),
-            round(p_rem * 0.20, 4),
-        ], dtype=float)
-        display_probs /= display_probs.sum()
+    # Factor 2: Acoustic & Synchrony Modality Calibration (Is Audio Real or Fake/Swapped?)
+    # Lip-Speech consistency (mHuBERT tokens vs 3D Viseme articulators)
+    if mean_sync < 0.15:
+        desync_prob = float(np.clip((0.30 - mean_sync) / 0.85, 0.0, 1.0))
     else:
-        verdict = "FAKE"
-        if pred_cls == "RVRA":
-            pred_cls = "FVRA"
-            cls_idx = 2
-        confidence = round(float(np.clip(max(median_fake, max_fake_cls_prob, mean_vf, mean_af), 0.78, 0.9999)), 4)
-        display_probs = mean_prob_4.copy()
-        if display_probs[0] >= 0.50:
-            display_probs[cls_idx] += (display_probs[0] - 0.05)
-            display_probs[0] = 0.05
-        display_probs /= display_probs.sum()
+        desync_prob = 0.0
+    p_a = max(mean_af, desync_prob)
+    p_a = float(np.clip(p_a, 0.05, 0.95))
+
+    # Factor 3: Joint Modality Attribution Matrix
+    prob_rvra = (1.0 - p_v) * (1.0 - p_a)
+    prob_rvfa = (1.0 - p_v) * p_a
+    prob_fvra = p_v * (1.0 - p_a)
+    prob_fvfa = p_v * p_a
+
+    display_probs = np.array([prob_rvra, prob_rvfa, prob_fvra, prob_fvfa], dtype=float)
+    display_probs /= display_probs.sum()
+
+    cls_idx = int(np.argmax(display_probs))
+    pred_cls = classes[cls_idx]
+    verdict = "REAL" if pred_cls == "RVRA" else "FAKE"
+    confidence = round(float(display_probs[cls_idx]), 4)
 
     # Timeline & Suspect Segments
     seen_t = set()
@@ -478,8 +458,8 @@ def analyze_video(video_path: str, filename: str = "video.mp4") -> Dict[str, Any
             "class": pred_cls,
             "label": modality_labels.get(pred_cls, pred_cls),
             "probabilities": prob_dict,
-            "audio_fake_prob": round(mean_af, 4),
-            "video_fake_prob": round(mean_vf, 4),
+            "audio_fake_prob": round(p_a, 4),
+            "video_fake_prob": round(p_v, 4),
         },
         "sync_timeline": sync_timeline,
         "suspect_segments": suspect_segments[:3],
