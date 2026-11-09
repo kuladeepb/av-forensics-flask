@@ -3,115 +3,84 @@
 {% block title %}Audio-Visual Deepfake Detection — AV-Forensics{% endblock %}
 
 {% block content %}
-<div class="flex flex-col lg:flex-row gap-6 w-full items-start">
+<div class="flex-grow w-full flex flex-col md:flex-row min-h-[calc(100vh-4rem-5.5rem)]">
 
-  <!-- Left Sidebar: ChatGPT-style Case History -->
-  <aside class="w-full lg:w-80 flex-shrink-0 bg-slate-900/70 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl backdrop-blur-md space-y-4 lg:sticky lg:top-24">
+  <!-- Left Sidebar: Attached to the left part completely, minimal bar -->
+  <aside class="w-full md:w-60 bg-slate-900/95 border-r border-slate-800/80 flex flex-col flex-shrink-0 p-3 space-y-3">
     
-    <!-- Top Action: + New Analysis -->
+    <!-- Minimal + New Analysis button -->
     <a href="{{ url_for('index') }}" 
-       class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2 group">
-      <svg class="w-4 h-4 group-hover:rotate-90 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+       class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs flex items-center justify-center gap-1.5 shadow transition">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
       </svg>
       <span>+ New Analysis</span>
     </a>
 
-    <!-- Sidebar Section Title -->
-    <div class="flex items-center justify-between px-2 pt-2 border-t border-slate-800/80">
-      <div class="flex items-center gap-2">
-        <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Case History</span>
-      </div>
-      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700">
-        {{ total_scans }} total
-      </span>
+    <!-- Minimal Header -->
+    <div class="flex items-center justify-between px-2 pt-1 text-[11px] font-semibold text-slate-400 border-t border-slate-800/60">
+      <span>History</span>
+      <span class="text-slate-500 font-mono text-[10px]">{{ total_scans }}</span>
     </div>
 
-    <!-- Case History List (Scrollable ChatGPT style) -->
-    <div class="space-y-2 max-h-[440px] overflow-y-auto pr-1 select-none custom-scrollbar">
+    <!-- Minimal Scrollable Case List -->
+    <div class="flex-grow space-y-1 overflow-y-auto max-h-[calc(100vh-16rem)] pr-0.5 text-xs select-none">
       {% if recent_scans %}
         {% for scan in recent_scans %}
         <a href="{{ url_for('view_result', case_id=scan['case_id']) }}"
-           class="block p-3 rounded-2xl bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800/80 hover:border-blue-500/40 transition group">
-          <div class="flex items-center justify-between gap-1.5 mb-1">
-            <span class="font-mono text-xs font-bold text-blue-400 group-hover:text-blue-300 truncate">
+           class="block p-2 rounded-lg bg-slate-950/40 hover:bg-slate-800/80 border border-slate-800/60 hover:border-slate-700 transition">
+          <div class="flex items-center justify-between gap-1 mb-0.5">
+            <span class="font-mono text-[11px] font-medium text-slate-200 truncate">
               {{ scan['case_id'] }}
             </span>
-            <span class="px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider
-              {% if scan['verdict'] == 'REAL' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30
-              {% else %}bg-rose-500/10 text-rose-400 border border-rose-500/30{% endif %}">
+            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase
+              {% if scan['verdict'] == 'REAL' %}bg-emerald-500/10 text-emerald-400
+              {% else %}bg-rose-500/10 text-rose-400{% endif %}">
               {{ scan['verdict'] }}
             </span>
           </div>
-
-          <div class="flex items-center justify-between text-[11px] text-slate-400">
-            <span class="truncate max-w-[140px] text-slate-300" title="{{ scan['filename'] }}">
-              {{ scan['filename'] }}
-            </span>
-            <span class="font-mono text-[10px] text-slate-500">
-              {{ (scan['confidence'] * 100)|round(0)|int }}% conf
-            </span>
-          </div>
-
-          <div class="mt-1 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-            <span>{{ scan['modality_class'] }}</span>
-            <span>{{ scan['created_at'][11:16] }}</span>
+          <div class="flex items-center justify-between text-[10px] text-slate-500">
+            <span class="truncate max-w-[110px]" title="{{ scan['filename'] }}">{{ scan['filename'] }}</span>
+            <span class="font-mono">{{ (scan['confidence'] * 100)|round(0)|int }}%</span>
           </div>
         </a>
         {% endfor %}
       {% else %}
-        <div class="p-6 text-center text-slate-500 space-y-2">
-          <svg class="w-8 h-8 mx-auto opacity-40 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-          </svg>
-          <p class="text-xs">No previous cases found</p>
-          <p class="text-[10px] text-slate-600">Uploaded videos will automatically be archived here</p>
+        <div class="p-4 text-center text-slate-500 text-xs">
+          No cases yet
         </div>
       {% endif %}
     </div>
 
-    <!-- Sidebar Bottom: Analyst Profile & Full Archive -->
-    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs uppercase">
-          {{ session.get('username', 'A')[0] }}
-        </div>
-        <div class="text-left">
-          <p class="text-xs font-semibold text-white leading-tight truncate max-w-[110px]">{{ session.get('username') }}</p>
-          <p class="text-[10px] text-slate-400 capitalize">{{ session.get('role', 'Analyst') }}</p>
-        </div>
-      </div>
-      <a href="{{ url_for('history') }}" class="text-[11px] text-blue-400 hover:text-blue-300 font-semibold hover:underline">
-        View All &rarr;
+    <!-- Minimal Bottom Link -->
+    <div class="pt-2 border-t border-slate-800/80">
+      <a href="{{ url_for('history') }}" class="text-[11px] text-slate-400 hover:text-blue-400 px-2 py-1 block text-center font-medium transition">
+        View All History &rarr;
       </a>
     </div>
 
   </aside>
 
   <!-- Right Main Area: Heading & Enlarged Upload Dropzone -->
-  <section class="flex-1 w-full space-y-6">
+  <section class="flex-1 px-4 sm:px-10 py-10 flex flex-col items-center justify-start max-w-4xl mx-auto w-full space-y-8">
     
     <!-- Heading (ONLY the heading, no lines above or below) -->
-    <div class="text-center pt-2 pb-1">
+    <div class="text-center pt-2">
       <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
         Audio-Visual Deepfake Detection
       </h1>
     </div>
 
     <!-- Enlarged Upload Card -->
-    <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-md">
+    <div class="w-full bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-md">
       <form id="uploadForm" action="{{ url_for('analyze') }}" method="POST" enctype="multipart/form-data">
         
-        <!-- Enlarged Drag & Drop Area -->
+        <!-- Large Dropzone -->
         <div id="dropZone"
           class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-3xl p-12 sm:p-16 text-center transition duration-300 cursor-pointer bg-slate-950/50 hover:bg-slate-950/80 group">
           
           <input type="file" id="videoInput" name="video" accept=".mp4,.mov,.avi" class="hidden" required>
           
-          <!-- Large Upload Cloud Icon -->
           <div class="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-3xl bg-blue-600/10 text-blue-400 border border-blue-500/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xl shadow-blue-500/10">
             <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
@@ -123,12 +92,12 @@
               <span class="text-blue-400 underline decoration-blue-500 underline-offset-4">Click to browse file</span> or drag &amp; drop video here
             </p>
             <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">
-              Supported video formats: <span class="font-mono text-slate-300 font-semibold">MP4, MOV, AVI</span> (Clear view of speaker face &amp; audible speech)
+              Supported video formats: <span class="font-mono text-slate-300 font-semibold">MP4, MOV, AVI</span>
             </p>
           </div>
 
           <!-- Selected File Banner -->
-          <div id="fileInfo" class="hidden mt-6 inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-slate-900 border border-blue-500/40 text-xs text-slate-200 shadow-xl animate-fade-in">
+          <div id="fileInfo" class="hidden mt-6 inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-slate-900 border border-blue-500/40 text-xs text-slate-200 shadow-xl">
             <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
             <span id="fileName" class="font-mono font-semibold">evidence_sample.mp4</span>
             <span class="text-slate-500">|</span>
@@ -139,11 +108,11 @@
         <!-- Submit Button -->
         <div class="mt-8 flex justify-center">
           <button type="submit" id="submitBtn" disabled
-            class="w-full sm:w-auto px-10 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-bold text-sm shadow-xl shadow-blue-600/30 transition flex items-center justify-center gap-3 group">
-            <svg class="w-5 h-5 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="w-full sm:w-auto px-10 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-bold text-sm shadow-xl shadow-blue-600/30 transition flex items-center justify-center gap-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
-            <span>Execute Forensic Deepfake Scan</span>
+            <span>Run Forensic Analysis</span>
           </button>
         </div>
       </form>
@@ -156,7 +125,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Performing Cross-Modal Phoneme-Viseme Examination...
+            Analyzing Lip-Audio Consistency...
           </span>
           <span id="stepCounter" class="text-xs text-blue-400 font-mono font-bold">Initializing Engine</span>
         </div>

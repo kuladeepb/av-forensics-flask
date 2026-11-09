@@ -88,7 +88,7 @@
   </div>
 
   <!-- Main Content -->
-  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="flex-grow w-full {% if request.endpoint != 'index' %}max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8{% else %}p-0 flex flex-col flex-grow{% endif %}">
     {% block content %}{% endblock %}
   </main>
 
