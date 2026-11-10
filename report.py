@@ -390,7 +390,7 @@ def generate_pdf_report(result: Dict[str, Any], output_path: str, examiner_name:
     selected_cls = result.get("modality", {}).get("class", "RVRA")
 
     mod_table_data = [
-        ["Class", "Description / Sub-Modality", "Assessed Probability", "Status"]
+        ["Class", "Description / Sub-Modality", "Assessed Probability", "Attribution Status"]
     ]
     class_desc = {
         "RVRA": "Real Video + Real Audio (Authentic Unmanipulated Recording)",
@@ -398,19 +398,23 @@ def generate_pdf_report(result: Dict[str, Any], output_path: str, examiner_name:
         "FVRA": "Fake Video + Real Audio (Face Swap / Neural Lip Reenactment)",
         "FVFA": "Fake Video + Fake Audio (Fully Synthetic AI Talking Avatar)",
     }
-    for c in ["RVRA", "RVFA", "FVRA", "FVFA"]:
+    selected_row_idx = 1
+    for row_idx, c in enumerate(["RVRA", "RVFA", "FVRA", "FVFA"], 1):
         p_str = f"{probs.get(c, 0.0) * 100:.1f}%"
         is_sel = (c == selected_cls)
-        sel_str = "<b>✓ SELECTED VERDICT</b>" if is_sel else "—"
+        if is_sel:
+            selected_row_idx = row_idx
+            sel_str = "✓ SELECTED VERDICT"
+        else:
+            sel_str = "—"
         mod_table_data.append([
-            f"<b>{c}</b>",
+            c,
             class_desc.get(c, ""),
-            f"<b>{p_str}</b>",
+            p_str,
             sel_str
         ])
 
-    t_mod = Table(mod_table_data, colWidths=[0.9 * inch, 4.3 * inch, 1.2 * inch, 1.0 * inch])
-    t_mod.setStyle(TableStyle([
+    table_styles = [
         ("BACKGROUND", (0, 0), (-1, 0), C_NAVY),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
@@ -418,10 +422,25 @@ def generate_pdf_report(result: Dict[str, Any], output_path: str, examiner_name:
         ("ALIGN", (0, 0), (0, -1), "CENTER"),
         ("ALIGN", (2, 0), (-1, -1), "CENTER"),
         ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER_L),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#F1F5F9")),
-    ]))
+        ("TOPPADDING", (0, 0), (-1, -1), 4.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4.5),
+        ("FONTNAME", (0, 1), (0, -1), "Helvetica-Bold"),
+        ("FONTNAME", (2, 1), (2, -1), "Helvetica-Bold"),
+        ("TEXTCOLOR", (0, 1), (-1, -1), C_DARK),
+    ]
+
+    # Highlight the chosen attribution verdict cleanly without HTML tags
+    if selected_row_idx > 0:
+        sel_bg = colors.HexColor("#ECFDF5") if verdict == "REAL" else colors.HexColor("#FEF2F2")
+        sel_text_col = colors.HexColor("#065F46") if verdict == "REAL" else colors.HexColor("#991B1B")
+        table_styles.extend([
+            ("BACKGROUND", (0, selected_row_idx), (-1, selected_row_idx), sel_bg),
+            ("TEXTCOLOR", (3, selected_row_idx), (3, selected_row_idx), sel_text_col),
+            ("FONTNAME", (3, selected_row_idx), (3, selected_row_idx), "Helvetica-Bold"),
+        ])
+
+    t_mod = Table(mod_table_data, colWidths=[0.9 * inch, 4.3 * inch, 1.2 * inch, 1.0 * inch])
+    t_mod.setStyle(TableStyle(table_styles))
     story.append(t_mod)
     story.append(Spacer(1, 6))
 
