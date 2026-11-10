@@ -69,19 +69,79 @@ def generate_analytics_dashboard_image(result: Dict[str, Any]) -> io.BytesIO:
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.set_facecolor("#FFFFFF")
     
-    wedges, texts, autotexts = ax1.pie(
+    wedges, texts = ax1.pie(
         values,
         labels=None,
-        autopct="%1.1f%%",
-        pctdistance=0.76,
         startangle=140,
         colors=colors_list,
-        wedgeprops=dict(width=0.42, edgecolor="#FFFFFF", linewidth=2)
+        wedgeprops=dict(width=0.38, edgecolor="#FFFFFF", linewidth=2.0)
     )
-    for at in autotexts:
-        at.set_fontsize(7.5)
-        at.set_fontweight("bold")
-        at.set_color("#FFFFFF")
+
+    # Leader lines with percentage labels outside (clean, non-overlapping)
+    labels_info = []
+    for i, (val, w) in enumerate(zip(values, wedges)):
+        if val <= 0.0:
+            continue
+        theta = (w.theta2 + w.theta1) / 2.0
+        rad = np.deg2rad(theta)
+        
+        # Point on the outer edge of the donut ring
+        x_edge = np.cos(rad)
+        y_edge = np.sin(rad)
+        
+        # Target position outside
+        x_out = 1.24 * np.cos(rad)
+        y_out = 1.24 * np.sin(rad)
+        
+        labels_info.append({
+            "idx": i,
+            "cls": classes[i],
+            "val": val,
+            "rad": rad,
+            "x_edge": x_edge,
+            "y_edge": y_edge,
+            "x_out": x_out,
+            "y_out": y_out,
+            "side": "right" if x_out >= 0 else "left",
+            "color": colors_list[i]
+        })
+
+    # Prevent vertical overlapping on left and right sides
+    for side in ["left", "right"]:
+        side_items = [item for item in labels_info if item["side"] == side]
+        side_items.sort(key=lambda item: item["y_out"])
+        min_gap = 0.24  # minimum vertical spacing between label baselines
+        for k in range(1, len(side_items)):
+            gap = side_items[k]["y_out"] - side_items[k-1]["y_out"]
+            if gap < min_gap:
+                shift = (min_gap - gap)
+                side_items[k]["y_out"] += shift
+                sgn = 1.0 if side == "right" else -1.0
+                curr_y = side_items[k]["y_out"]
+                side_items[k]["x_out"] = sgn * max(0.95, np.sqrt(max(0.2, 1.30**2 - min(1.2, curr_y**2))))
+
+    for item in labels_info:
+        ha = "left" if item["side"] == "right" else "right"
+        elbow_x = item["x_out"]
+        elbow_y = item["y_out"]
+        text_x = elbow_x + (0.06 if item["side"] == "right" else -0.06)
+        
+        ax1.annotate(
+            f"{item['val']:.1f}%",
+            xy=(item["x_edge"], item["y_edge"]),
+            xytext=(text_x, elbow_y),
+            ha=ha, va="center",
+            fontsize=7.2, fontweight="bold", color="#1E293B",
+            arrowprops=dict(
+                arrowstyle="-",
+                color="#94A3B8",
+                lw=0.85,
+                connectionstyle=f"angle,angleA=0,angleB={int(np.rad2deg(item['rad']))},rad=0"
+            )
+        )
+
+    ax1.set_xlim(-1.75, 1.75)
+    ax1.set_ylim(-1.45, 1.45)
 
     # Center circle verdict badge
     verdict = result.get("verdict", "REAL")
