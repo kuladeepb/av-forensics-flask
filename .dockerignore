@@ -11,6 +11,5 @@ data/uploads/*
 !data/uploads/.gitkeep
 data/reports/*
 !data/reports/.gitkeep
-model.pth
 *.log
 
