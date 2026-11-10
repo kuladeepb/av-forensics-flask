@@ -124,7 +124,7 @@ class ModelWrapper:
     _instance: Optional[ModelWrapper] = None
 
     def __init__(self, model_path: str, config_path: str):
-        self.device = torch.device("cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         with open(config_path, "r") as f:
             self.cfg = json.load(f)
