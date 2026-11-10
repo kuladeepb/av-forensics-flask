@@ -24,6 +24,7 @@ data/reports/*
 # Local SQLite Database & Logs
 data/forensics.db
 *.log
+cloudflared.exe
 .env
 .env.*
 
